@@ -1,0 +1,118 @@
+/* ==========================================================================
+   FluentBird patches for Thunderbird 157
+   ----------------------------------------------------------------------
+   FluentBird (https://github.com/Deathbyteacup/fluentbird) was built and
+   tested against an earlier Thunderbird release. These rules patch a few
+   issues found specifically on Thunderbird 157 (stock layout bugs exposed
+   by the theme's styling, plus a couple of visual refinements).
+
+   Install: drop this file into your Thunderbird profile's chrome/ folder
+   as custom.css, alongside FluentBird's own files. FluentBird's
+   userChrome.css already @imports custom.css, so no further setup is
+   needed beyond the usual FluentBird install steps.
+   ========================================================================== */
+
+
+/* --------------------------------------------------------------------------
+   1. Message subject line wrapping to 2 lines when it should fit on 1
+   --------------------------------------------------------------------------
+   Root cause: mail/themes/shared/mail/messageHeader.css sets
+   `.message-header-large-subject #expandedsubjectBox { font-size: 1.35em }`.
+   That 35% size bump, combined with the subject row sharing horizontal
+   space with the date/crypto/security buttons box, is enough to force a
+   wrap even for short subjects (especially with CJK text, which is wider
+   per character than Latin text at the same font size). This is a stock
+   Thunderbird 157 layout issue, not something introduced by FluentBird.
+   -------------------------------------------------------------------------- */
+#expandedsubjectBox {
+  font-size: 1.05em !important;
+  line-height: 1.3 !important;
+}
+
+#expandedButtonsBox {
+  flex-shrink: 1 !important;
+}
+
+
+/* --------------------------------------------------------------------------
+   2. Message list cards: asymmetric padding, no rounding, too much
+      vertical whitespace
+   --------------------------------------------------------------------------
+   Root cause: mail/themes/shared/mail/threadCard.css sets
+   `.card-container { padding-inline-start: var(--tree-card-content-inline) }`
+   with no matching padding-inline-end anywhere in the file, so the right
+   side sits flush against the card edge. Also a stock Thunderbird 157
+   issue, just made visually obvious once a theme gives the card an actual
+   background color.
+   -------------------------------------------------------------------------- */
+.card-container {
+  padding-inline-end: var(--tree-card-content-inline) !important;
+  border-radius: 8px !important;
+}
+
+.thread-card-column {
+  padding-block: calc(var(--thread-pane-container-gap) * 0.55) !important;
+}
+
+
+/* --------------------------------------------------------------------------
+   3. Tabs: no visual distinction between active/inactive, forced equal
+      width regardless of label length
+   --------------------------------------------------------------------------
+   FluentBird's own userChrome.css only styles the selected tab's
+   background (a faint translucent white) and explicitly zeroes out
+   Thunderbird's stock active-tab indicator line (`.tab-line { height: 0 }`),
+   leaving inactive tabs with no distinguishing background at all. It also
+   doesn't touch Thunderbird's stock tab width rule
+   (`.tabmail-tab { flex: 100 100; inline-size: 0 }`), which forces every
+   open tab to the same computed width no matter how short its label is.
+   -------------------------------------------------------------------------- */
+.tabmail-tab {
+  background-color: #ececee !important;
+  border: 1px solid #d8d8da !important;
+  border-bottom: none !important;
+}
+
+.tabmail-tab[selected="true"] {
+  background-color: #e7f1fd !important;
+  border: 1px solid #5aa4ef !important;
+  border-bottom: none !important;
+}
+
+.tab-background[selected="true"] {
+  background-color: transparent !important;
+}
+
+/* Restore an accent-colored active-tab indicator, since FluentBird removes
+   the stock one (.tab-line { height: 0px }) without replacing it. */
+.tabmail-tab[selected="true"] .tab-line {
+  height: 2px !important;
+  background-color: #5aa4ef !important;
+}
+
+@media (prefers-color-scheme: dark) {
+  .tabmail-tab {
+    background-color: #3a3a3d !important;
+    border: 1px solid #2a2a2c !important;
+    border-bottom: none !important;
+  }
+
+  .tabmail-tab[selected="true"] {
+    background-color: #2d3b4d !important;
+    border: 1px solid #5aa4ef !important;
+    border-bottom: none !important;
+  }
+}
+
+/* Width based on content instead of forced-equal (stock rule was
+   `flex: 100 100; inline-size: 0`, which makes every tab the same width). */
+.tabmail-tab {
+  flex: 0 1 auto !important;
+  inline-size: auto !important;
+  min-inline-size: 60px !important;
+  max-inline-size: 240px !important;
+}
+
+.tab-content {
+  padding-inline: 10px !important;
+}
